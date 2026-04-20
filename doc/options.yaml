@@ -1,0 +1,278 @@
+inputFile:
+  desc: >
+    Name of the file that contains the surface mesh.
+    This is a file that has been generated in an external meshing program, typically ICEMCFD.
+
+patches:
+  desc: >
+    Explicitly assign arrays of patches as the input surface.
+
+fileType:
+  desc: >
+    Type of the input file.
+  CGNS: CGNS format
+  PLOT3D: PLOT3D format
+
+skip:
+  desc: >
+    Flag to entirely skip the grid generation of this geometry.
+
+mode:
+  desc: >
+    Type of extrusion.
+  hyperbolic: Most commonly used
+  elliptic: Not typically used
+
+unattachedEdgesAreSymmetry:
+  desc: >
+    Automatically applies symmetry boundary conditions to any edges that do not interface with another block.
+    This option may fail in rare cases.
+    See :ref:`here<pyhyp_autoSymm>` for details.
+
+outerFaceBC:
+  desc: >
+    Specifies the boundary condition at the outermost face of the extruded mesh.
+  farfield: Farfield BC
+  overset: Used for overset component meshes
+
+BC:
+  desc: >
+    Specifies boundary condition information for specific block edges. See :ref:`here<pyhyp_BC>` for details.
+
+families:
+  desc: >
+    Name given to wall surfaces.
+    If a dictionary is submitted, each wall patch can be named separately.
+    This can help with applying operations to specific wall patches.
+
+autoConnect:
+  desc: >
+    Run the cgnsUtilities ``connect`` function to add any necessary block to block connectivity.
+
+noPointReduce:
+  desc: >
+    Do not find duplicate nodes along edges.
+    This can only be used with single surface input files.
+
+N:
+  desc: >
+    Number of grid levels to march.
+    This determines the grid dimension in the off-wall direction.
+    Typically, this should be a "multi-grid" friendly number.
+
+s0:
+  desc: >
+    Initial off-wall (normal) spacing of grid.
+    This is taken to be constant across the entire geometry.
+    The units are consistent with the rest of the geometry.
+
+nConstantStart:
+  desc: >
+    Number of constant off-wall layers before beginning stretch.
+
+nConstantEnd:
+  desc: >
+    Number of constant layers at the end of the march.
+
+nTruncate:
+  desc: >
+    This will stop the mesh marching after the specified number of levels.
+    Specifying :math:`1 <` ``nTruncate`` :math:`<` :py:data:`N` will produce a mesh that is identical to the first ``nTruncate`` levels of the full mesh with :py:data:`N` levels.
+    Values outside of this range have no effect.
+    This option is mainly useful for debugging low quality cells or negative volumes in the first few layers of the mesh.
+
+marchDist:
+  desc: >
+    Distance to march in the normal direction.
+    Most wing geometries will have a distance such that the farfield boundary is 10 to 20 span lengths away from the geometry.
+
+nodeTol:
+  desc: >
+    Tolerance for nodes to be treated as identical.
+
+splay:
+  desc: >
+    Splay BC spreading factor.
+    This controls how far the floating edges splay outwards and can be useful for increasing the volume overlap in overset meshes.
+    This variable may come in different formats:
+    (1) If it is a ``scalar``, the same value is used throughout all of the grid.
+    (2) If it is a ``1D list``, it must have a length of :py:data:`N` - 1. Each entry is used for the corresponding extrusion layer. E.g. ``splay: [0.2, 0.3, 0.4]`` would result in a grid with 3 extrusions where the first layer uses ``0.2``, the second layer uses ``0.3`` and the last one uses ``0.4``.
+    (3) If it is a ``2D list``, the values are interpolated linearly. E.g. ``splay: [[0.0, 0.2], [0.5, 0.4], [1.0, 0.0]]`` would result in a linear increase from ``0.2`` to ``0.4`` at half of the total :py:data:`N`. Then it would linearly decrease until it reaches ``0.0`` in the last extrusion.
+
+
+splayEdgeOrthogonality:
+  desc: >
+    How hard to try to force orthogonality at splay edges.
+    Should be between 0 and 0.5.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+splayCornerOrthogonality:
+  desc: >
+    How hard to try to force orthogonality at splay corners.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+cornerAngle:
+  desc: >
+    Maximum convex corner angle in degrees necessary to trigger the implicit node averaging scheme.
+    See Section 8 of :ref:`Chan and Steger<pyhyp_theory>` for more information.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+coarsen:
+  desc: >
+    Automatically coarsen a surface mesh before starting extrusion.
+    ``1`` gives the same surface mesh.
+    ``2`` coarsens by a factor of 2 in each direction.
+    ``3`` coarsens by a factor of 4 in each direction, and so on.
+
+panelEps:
+  desc: >
+    Only used in elliptic mode.
+    Distance source panels are "below" nodes.
+    This parameter usually does not need to be changed.
+
+farfieldTolerance:
+  desc: >
+    Only used in elliptic mode.
+    The multiple of the panel length cutoff to use the approximation formula.
+
+useMatrixFree:
+  desc: >
+    Only used in elliptic mode.
+    Use matrix-free solution technique.
+    This is always True when :py:data:`evalMode` is ``fast``.
+
+evalMode:
+  desc: >
+    Only used in elliptic mode.
+    Type of panel evaluation routine.
+  exact: Modifies the farfield tolerance to ensure that only the exact evaluations are used
+  slow: Uses farfield approximations but does not group panels
+  fast: Uses farfield approximations and panel groupings
+
+sourceStrengthFile:
+  desc: >
+    Only used in elliptic mode.
+    File to use to load/save the source strengths on the surface.
+
+cMax:
+  desc: >
+    The maximum permissible ratio of the step in the marching direction to the length of any in-plane edge.
+    This parameter effectively operates as a CFL-type limit.
+    If a step would result in a ratio ``c`` greater than ``cMax``, the step is automatically split internally to respect this user-supplied limit.
+    Increased robustness can be achieved at the expense of computational cost by lowering ``cMax``.
+
+nonLinear:
+  desc: >
+    Use the nonlinear formulation.
+    This is experimental and not currently recommended and may not work at all.
+
+slExp:
+  desc: >
+    Exponent used in the scaling function :math:`S_l`, which is computed as :math:`S_l = \left(\frac{\text{Distance from wall}}{\texttt{marchDist}}\right)^\texttt{slExp}`.
+    :math:`S_l` scales the explicit smoothing such that it is low near the wall to maintain orthogonality and high away from the wall to prevent crossing of grid lines in concave regions.
+    This is the same purpose as described in Section 6 of :ref:`Chan and Steger<pyhyp_theory>`, but the computation is different.
+    The exponent determines how quickly the smoothing ramps up as the extrusion moves away from the wall.
+    An exponent closer to zero will result in steeper ramping.
+
+ps0:
+  desc: >
+    Initial pseudo off-wall spacing.
+    This spacing **must** be less than or equal to ``s0``.
+    This is the actual spacing the hyperbolic scheme uses.
+    The solver may take many pseudo steps before the first real grid level at ``s0``.
+    This is computed internally if a non-positive value is provided.
+
+pGridRatio:
+  desc: >
+    The ratio between successive levels in the pseudo grid.
+    This will be typically somewhere between ~1.05 for large grids to 1.2 for small grids.
+    This number is **not** the actual grid spacing of the final grid; that spacing ratio is computed and displayed at the beginning of a calculation.
+    The ``pGridRatio`` **must** be smaller than that number.
+    This is computed internally if a non-positive value is provided.
+
+epsE:
+  desc: >
+    The explicit smoothing parameter.
+    Typical values are approximately 1.0.
+    Increasing the explicit smoothing may result in a smoother grid, at the expense of orthogonality.
+    If the geometry has very sharp corners, too much explicit smoothing will cause the solver to rapidly "soften" the corner and the grid will fold back on itself.
+    In concave corners, additional smoothing will prevent lines from crossing (avoiding negative cells).
+    See Section 3 of :ref:`Chan and Steger<pyhyp_theory>` for more information.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+epsI:
+  desc: >
+    Implicit smoothing parameter.
+    Typical values are from 2.0 to 6.0.
+    Generally increasing the implicit coefficient results in a more stable solution procedure.
+    Usually this value should be twice the explicit smoothing parameter.
+    See Section 3 of :ref:`Chan and Steger<pyhyp_theory>` for more information.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+theta:
+  desc: >
+    Kinsey-Barth coefficient.
+    This provides additional implicit smoothing and is useful for preventing grid lines from crossing at concave corners.
+    A single theta value is used for both in-plane directions.
+    Typical values are ~2.0 to ~4.0.
+    See Section 3 of :ref:`Chan and Steger<pyhyp_theory>` for more information.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+volCoef:
+  desc: >
+    Coefficient used in point-Jacobi local volume smoothing algorithm.
+    The value should be between 0 and 1.
+    Larger values will result in a more uniform cell volume distribution.
+    Alternatively, use more :py:data:`volSmoothIter` for stronger local smoothing.
+    See Section 5 of :ref:`Chan and Steger<pyhyp_theory>` for more information.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+volBlend:
+  desc: >
+    The global volume blending coefficient.
+    This value will typically be very small, especially if you have widely varying cell sizes.
+    Typical values are from ~0 to 0.001.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+volSmoothIter:
+  desc: >
+    The number of point-Jacobi local volume smoothing iterations to perform at each level.
+    More iterations will result in a more uniform cell volume distribution.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+growthRatios:
+  desc: >
+    Manually specify the growth ratio(s). If not ``None``, this superseeds :py:data:`marchDist`.
+    Please look at :py:data:`splay` for explanations and examples on the format.
+
+KSPRelTol:
+  desc: >
+    Tolerance for the solution of the linear system at each iteration.
+    Typically :math:`1\times 10^{-8}` is sufficient.
+    Very difficult cases may benefit from a tighter convergence tolerance.
+
+KSPMaxIts:
+  desc: >
+    Maximum number of iterations to perform for each step.
+    The default should be sufficient for most cases.
+
+KSPSubspaceSize:
+  desc: >
+    Size of the Krylov subspace.
+    Very large and difficult problems may benefit from a larger subspace size.
+
+writeMetrics:
+  desc: >
+    Flag to write the mesh gradients to the solution file.
+    This option should only be used for debugging purposes.
+
+outputType:
+  desc: >
+    Output format for the volume mesh.
+  CGNS: CGNS format
+  PLOT3D: PLOT3D format
+
+outputFile:
+  desc: >
+    Output filename.
+    If None, an automatic filename will be generated by appending "_hyp" to the input filename.

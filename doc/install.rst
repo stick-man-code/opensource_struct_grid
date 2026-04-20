@@ -1,0 +1,86 @@
+.. _pyhyp_installation:
+
+Installation
+=============
+
+Prerequisites
+-------------
+
+The following external packages are required for pyHyp:
+
+- CGNS Libarary
+- PETSc
+
+See the MDO Lab installation guide `here <https://mdolab-mach-aero.readthedocs-hosted.com/en/latest/installInstructions/install3rdPartyPackages.html#installthirdpartypackages>`__ for the supported versions and installation instructions.
+
+.. NOTE:: A working MPI is not strictly required.
+   However, in most cases, PETSc should be configured with MPI.
+   Note that ``mpi4py`` should be installed also.
+
+In addition, the following MDO Lab packages are required:
+
+- `baseclasses <https://github.com/mdolab/baseclasses>`_
+- `cgnsutilities <https://github.com/mdolab/cgnsutilities>`_
+
+Please refer to the package documentation for installation instructions.
+For a general MDO Lab installation guide, see `here <https://mdolab-mach-aero.readthedocs-hosted.com/en/latest/installInstructions/installFromScratch.html#mdo-lab-packages>`__.
+
+
+Compilation
+------------
+pyHyp follows the standard MDO Lab build procedure.
+To start, first clone the repo.
+For stability we recommend checking out a tagged release.
+
+Next, find a configuration file close to your current setup in ``config/defaults`` and copy it to ``config/config.mk``.
+For example:
+
+.. prompt:: bash
+
+    cp config/defaults/config.LINUX_GFORTRAN.mk config/config.mk
+
+If you are a beginner user installing the packages on a Linux desktop,
+you should use the ``config.LINUX_GFORTRAN.mk`` versions of the configuration
+files.
+The ``config.LINUX_INTEL.mk`` versions are usually used on clusters.
+
+Once you have copied the config file, compile pyHyp by running:
+
+.. prompt:: bash
+
+    make
+
+If everything was successful, the following lines will be printed to
+the screen (near the end)::
+
+   Testing if module hyp can be imported...
+   Module hyp was successfully imported.
+
+Finally, install the Python interface with:
+
+.. prompt:: bash
+
+    pip install .
+
+Testing Your Installation
+-------------------------
+
+To test your installation, you can run the regression tests.
+Running the tests requires additional dependencies.
+Check if you have these installed by running:
+
+.. prompt:: bash
+
+    pip install .[testing]
+
+Once you have the necessary dependencies, download the reference mesh files:
+
+.. prompt:: bash
+
+    ./tests/ref/get-ref-files.sh
+
+Then, in the root directory, run:
+
+.. prompt:: bash
+
+    testflo -v

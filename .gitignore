@@ -1,0 +1,24 @@
+#Ignore ruff and pre-commit config files
+ruff.toml
+.pre-commit-config.yaml
+*.so
+*.o
+*.pyc
+*~
+.*~
+*.orig
+*.mod
+*.pyf
+*.a
+*.dat
+*.mk
+*.xyz
+*.phy
+*.fmt
+*.lay
+*.plt
+*.cgns
+*.out
+*.egg-info
+doc/tmp.rst
+doc/_build
